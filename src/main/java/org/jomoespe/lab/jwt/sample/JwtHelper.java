@@ -11,15 +11,6 @@ import java.security.Key;
 import java.security.KeyPair;
 
 public class JwtHelper {
-    public static void main(final String...args) {
-        final String token = token( "jomoespe", "Jose Moreno" );
-        System.out.printf("token=%s\n\n", token);
-
-        Jws<Claims> claims = claims( token );
-        System.out.printf("claims.body.subject = %s\n", claims.getBody().getSubject());
-        System.out.printf("claims.body.id = %s\n",      claims.getBody().getId());
-    }
-
     static {
         KeyPair key = RsaProvider.generateKeyPair();
         PRIV = key.getPrivate();
