@@ -9,6 +9,3 @@ How to build it
 ---------------
 
     $ ./mvnw clean verify
-
-
-    jwt-assymetric
