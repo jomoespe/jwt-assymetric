@@ -15,7 +15,8 @@ import io.jsonwebtoken.impl.crypto.RsaProvider;
 import java.security.Key;
 import java.security.KeyPair;
 import java.time.Duration;
-import java.util.Date;
+import java.time.Instant;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class JwtHelper {
@@ -58,15 +59,13 @@ public class JwtHelper {
     private static final String   AUDIENCE   = "jomoespe jwt test";
     private static final Duration EXPIRATION = ofSeconds( 5 );
     
-    private static final Supplier<Date>       expiration = () -> from( now().plus( EXPIRATION ) );
-    private static final Supplier<Date>       notBefore  = () -> from( now() );
-    private static final Supplier<Date>       issuedAt   = () -> from( now() );
-    private static final Supplier<JwtBuilder> baseJwt    = () -> Jwts.builder()
+    private static final Function<Instant,Instant> expiration = (date) -> date.plus( EXPIRATION ) ;
+    private static final Supplier<JwtBuilder>      baseJwt    = ()     -> Jwts.builder()
             .signWith( RS256, PRIV )
             .setId( JWT_ID )
             .setIssuer( ISSUER )
             .setAudience( AUDIENCE )
-            .setExpiration( expiration.get() )
-            .setNotBefore( notBefore.get() )
-            .setIssuedAt( issuedAt.get() );
+            .setIssuedAt( from(now()) )
+            .setNotBefore( from(now()) )
+            .setExpiration( from( expiration.apply(now()) ) );
 }

@@ -38,7 +38,7 @@ public class JwtHelperTest {
             currentThread().sleep( duration().getSeconds() * 1000 );
         } catch (InterruptedException e) {} 
         
-        Jws<Claims> claims = claims( token );
+        claims( token );
     }
 
     @Test
