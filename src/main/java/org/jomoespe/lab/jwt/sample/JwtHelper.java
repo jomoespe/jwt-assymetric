@@ -16,6 +16,7 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -29,38 +30,19 @@ public class JwtHelper {
     
     private JwtHelper() { /* private constructor to avoid instantiation */ }
     
-    public static String token(final String subject, final String role) {
-        return baseJwt.get()
-            .setSubject( subject )
-            .claim("roles", role)
-            .compact();
-    }
-
-    public static String refresh(final String token) {
-        Jws<Claims> claims = claims( token );
-        return token( claims.getBody().getSubject(), claims.getBody().get("roles", String.class) );
-    }
-    
-    public static Jws<Claims> claims(final String token) {
-        return Jwts.parser()
-            .setSigningKey( PUB )
-            .parseClaimsJws( token );
-    }
-    
-    public static Duration duration() {
-        return EXPIRATION;
-    }
-
     private static final Key      PRIV;
     private static final Key      PUB; 
     
-    private static final String   JWT_ID     = "jwt id";
-    private static final String   ISSUER     = "jomoespe issuer";
-    private static final String   AUDIENCE   = "jomoespe jwt test";
-    private static final Duration EXPIRATION = ofSeconds( 5 );
+    private static final String   JWT_ID   = "jwt id";
+    private static final String   ISSUER   = "jomoespe issuer";
+    private static final String   AUDIENCE = "jomoespe jwt test";
+    private static final Duration DURATION = ofSeconds( 5 );
+
+    public static Supplier<Duration> duration = () -> DURATION;
     
-    private static final Function<Instant,Instant> expiration = (date) -> date.plus( EXPIRATION ) ;
-    private static final Supplier<JwtBuilder>      baseJwt    = ()     -> Jwts.builder()
+    private static final Function<Instant,Instant> expiration = (date) -> date.plus( duration.get() ) ;
+    
+    private static final Supplier<JwtBuilder> createBaseJwt    = ()     -> Jwts.builder()
             .signWith( RS256, PRIV )
             .setId( JWT_ID )
             .setIssuer( ISSUER )
@@ -68,4 +50,20 @@ public class JwtHelper {
             .setIssuedAt( from(now()) )
             .setNotBefore( from(now()) )
             .setExpiration( from( expiration.apply(now()) ) );
+    
+    public static BiFunction<String, String, String> token = (subject, role) -> {
+        return createBaseJwt.get()
+            .setSubject( subject )
+            .claim("roles", role)
+            .compact();
+    };
+
+    public static Function<String,Jws<Claims>> claims = (token) -> Jwts.parser()
+            .setSigningKey( PUB )
+            .parseClaimsJws( token );
+    
+    public static Function<String,String> refresh = (aToken) -> {
+        Jws<Claims> theClaims = claims.apply( aToken );
+        return token.apply( theClaims.getBody().getSubject(), theClaims.getBody().get("roles", String.class) );
+    };
 }

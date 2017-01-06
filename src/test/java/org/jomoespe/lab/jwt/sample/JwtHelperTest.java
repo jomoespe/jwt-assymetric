@@ -20,47 +20,46 @@ import org.junit.Test;
 public class JwtHelperTest {
     @Test
     public void assertCanWorkWithToken() {
-        String token = token("user_id@server.com", "one role");
+        String theToken = token.apply("user_id@server.com", "one role");
         assertNotNull(token);
         
-        Jws<Claims> claims = claims( token );
+        Jws<Claims> theClaims = claims.apply( theToken );
         assertNotNull(claims);
-        assertEquals("user_id@server.com",  claims.getBody().getSubject());
-        assertEquals("one role",            claims.getBody().get("roles"));
+        assertEquals("user_id@server.com",  theClaims.getBody().getSubject());
+        assertEquals("one role",            theClaims.getBody().get("roles"));
     }
 
     @Test(expected = ExpiredJwtException.class)
     public void assertTokenExpires() {
-        String token = token("user_id@server.com", "one role");
+        String theToken = token.apply("user_id@server.com", "one role");
         assertNotNull(token);
-        
-        try {
-            currentThread().sleep( duration().getSeconds() * 1000 );
-        } catch (InterruptedException e) {} 
-        
-        claims( token );
+        sleep( duration.get().getSeconds() * 1000 );
+        claims.apply( theToken );
     }
 
     @Test
     public void assertcanRefreshAToken() {
-        String token = token("user_id@server.com", "one role");
-        try { currentThread().sleep( 4000 ); } catch (InterruptedException e) {} 
-
-        String refreshed = refresh( token );
-        try { currentThread().sleep( 4000); } catch (InterruptedException e) {} 
-        claims( refreshed );
-        assertNotEquals(token, refreshed);
+        String theToken = token.apply("user_id@server.com", "one role");
+        sleep( 4000 );
+        String refreshedToken = refresh.apply( theToken );
+        sleep( 4000 );
+        claims.apply( refreshedToken );
+        assertNotEquals(theToken, refreshedToken);
     }
 
     @Test(expected = ExpiredJwtException.class)
     public void assertCannotRefreshAnOutdatedToken() {
-        String token = token("user_id@server.com", "one role");
-        assertNotNull(token);
-        
-        try {
-            currentThread().sleep( duration().getSeconds() * 1000 );
-        } catch (InterruptedException e) {} 
-        refresh( token );
+        String theToken = token.apply("user_id@server.com", "one role");
+        assertNotNull(theToken);
+        sleep( duration.get().getSeconds() * 1000 );
+        refresh.apply( theToken );
     }
 
+    private void sleep(final long time) {
+        try { 
+            currentThread().sleep( time ); 
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
