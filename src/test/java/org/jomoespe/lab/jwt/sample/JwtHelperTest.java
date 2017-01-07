@@ -4,6 +4,8 @@ import static org.jomoespe.lab.jwt.sample.JwtHelper.token;
 import static org.jomoespe.lab.jwt.sample.JwtHelper.claims;
 import static org.jomoespe.lab.jwt.sample.JwtHelper.refresh;
 import static org.jomoespe.lab.jwt.sample.JwtHelper.duration;
+import static org.jomoespe.lab.jwt.sample.JwtHelper.subject;
+import static org.jomoespe.lab.jwt.sample.JwtHelper.roles;
 
 import static java.lang.Thread.currentThread;
 
@@ -25,8 +27,8 @@ public class JwtHelperTest {
         
         Jws<Claims> theClaims = claims.apply( theToken );
         assertNotNull(claims);
-        assertEquals("user_id@server.com",  theClaims.getBody().getSubject());
-        assertEquals("one role",            theClaims.getBody().get("roles"));
+        assertEquals("user_id@server.com",  subject.apply(theClaims).get());
+        assertEquals("one role",            roles.apply(theClaims).get());
     }
 
     @Test(expected = ExpiredJwtException.class)
